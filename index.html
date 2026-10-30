@@ -60,7 +60,7 @@ button { font: inherit; color: inherit; }
 
 /* Шапка */
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
-.bar { display: flex; align-items: center; gap: 12px; padding-block: 12px 8px; }
+.bar { display: flex; align-items: center; gap: 8px; padding-block: 12px 8px; }
 .brand { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
 .logo { font: 700 22px/1 var(--font-display); letter-spacing: .14em; }
 .tag { font-size: 12px; color: var(--muted); letter-spacing: .04em; margin-top: 4px; }
@@ -132,6 +132,7 @@ footer { color: var(--muted); font-size: 13px; padding-block: 0 32px; display: g
         <button type="button" id="lang-ru" data-lang="ru">RU</button>
         <button type="button" id="lang-kz" data-lang="kz">KZ</button>
       </div>
+      <button type="button" class="icon-btn" id="motion" aria-label="Пауза"></button>
       <button type="button" class="icon-btn" id="theme" aria-label="Тема">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
@@ -165,7 +166,7 @@ const DEFAULT_CATEGORIES = [
 
 const T = {
   ru: {
-    tag: 'суши-бар · меню', theme: 'Сменить тему', soon: 'Позиции раздела скоро появятся.',
+    tag: 'суши-бар · меню', theme: 'Сменить тему', pause: 'Остановить вращение', play: 'Включить вращение', soon: 'Позиции раздела скоро появятся.',
     demo: 'демо', video: 'Видео', spin: '360°', model: '3D', close: 'Закрыть',
     hint: 'Проведите пальцем, чтобы повернуть', composition: 'Состав', allergens: 'Аллергены',
     g: 'г', ml: 'мл', noAllergens: 'Основные аллергены не указаны',
@@ -174,7 +175,7 @@ const T = {
     error: 'Меню не загрузилось. Проверьте интернет и обновите страницу.',
   },
   kz: {
-    tag: 'суши-бар · мәзір', theme: 'Тақырыпты ауыстыру', soon: 'Бұл бөлімнің тағамдары жақында қосылады.',
+    tag: 'суши-бар · мәзір', theme: 'Тақырыпты ауыстыру', pause: 'Айналуды тоқтату', play: 'Айналуды қосу', soon: 'Бұл бөлімнің тағамдары жақында қосылады.',
     demo: 'демо', video: 'Бейне', spin: '360°', model: '3D', close: 'Жабу',
     hint: 'Бұру үшін саусақпен сырғытыңыз', composition: 'Құрамы', allergens: 'Аллергендер',
     g: 'г', ml: 'мл', noAllergens: 'Негізгі аллергендер көрсетілмеген',
@@ -194,6 +195,8 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
 };
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Вращение — главное в меню, поэтому включено у всех; кнопка в шапке его останавливает
+let motionOn = store.get('tokio-motion') !== 'off';
 let lang = store.get('tokio-lang') || ((navigator.language || '').toLowerCase().startsWith('kk') ? 'kz' : 'ru');
 let data = { categories: DEFAULT_CATEGORIES, dishes: [] };
 
@@ -220,7 +223,7 @@ async function load() {
 /* ---------- Список ---------- */
 function mediaHTML(d) {
   const poster = d.poster_url ? ` style="background-image:url('${esc(d.poster_url)}')"` : '';
-  const video = d.video_url && !reduceMotion
+  const video = d.video_url
     ? `<video muted loop playsinline preload="none" poster="${esc(d.poster_url || '')}" data-src="${esc(d.video_url)}" aria-hidden="true"></video>` : '';
   const badge = d.demo_media ? `<span class="badge">${T[lang].demo}</span>` : '';
   return `<span class="media"${poster}>${video}${badge}</span>`;
@@ -231,6 +234,7 @@ function render() {
   document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru';
   $('#tag').textContent = t.tag;
   $('#theme').setAttribute('aria-label', t.theme);
+  renderMotionButton();
   for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-pressed', b.dataset.lang === lang);
 
   const cats = [...data.categories].sort((a, b) => a.sort - b.sort);
@@ -268,14 +272,62 @@ function watchVideos() {
   videoObserver?.disconnect();
   videoObserver = new IntersectionObserver(entries => {
     for (const e of entries) {
-      const v = e.target;
-      if (e.isIntersecting) {
-        if (!v.src) { v.src = v.dataset.src; v.addEventListener('error', () => v.remove(), { once: true }); }
-        v.play().catch(() => {});
-      } else if (v.src) v.pause();
+      e.target.onScreen = e.isIntersecting;
+      e.isIntersecting ? playCard(e.target) : stopCard(e.target);
     }
   }, { rootMargin: '200px 0px', threshold: 0.25 });
-  document.querySelectorAll('#list video').forEach(v => videoObserver.observe(v));
+  document.querySelectorAll('#list .media').forEach(box => videoObserver.observe(box));
+}
+
+function playCard(box) {
+  if (!motionOn) return stopCard(box);
+  if (box.frames) return box.frames.start();
+  const v = box.querySelector('video');
+  if (!v) return toFrames(box);
+  v.muted = true;
+  if (!v.getAttribute('src')) {
+    v.src = v.dataset.src;
+    v.addEventListener('error', () => toFrames(box), { once: true });
+  }
+  v.play().catch(e => { if (e.name !== 'AbortError') toFrames(box); });
+  // Экономия заряда и похожие режимы могут молча не запустить видео
+  clearTimeout(box.watchdog);
+  box.watchdog = setTimeout(() => {
+    if (box.onScreen && motionOn && v.isConnected && (v.paused || v.currentTime === 0)) toFrames(box);
+  }, 5000);
+}
+
+function stopCard(box) {
+  clearTimeout(box.watchdog);
+  box.frames?.stop();
+  box.querySelector('video')?.pause();
+}
+
+// Запасной вариант: вращение сменой кадров 360°, когда видео не играет
+function toFrames(box) {
+  if (box.frames) return;
+  const d = data.dishes.find(x => x.id === box.closest('.card').dataset.id);
+  if (!d?.spin_base || !d.spin_count) return;
+  const frames = [];
+  for (let i = 0; i < d.spin_count; i++) { const im = new Image(); im.src = spinSrc(d, i); frames.push(im); }
+  const img = document.createElement('img');
+  img.alt = ''; img.src = frames[0].src;
+  box.querySelector('video')?.remove();
+  box.prepend(img);
+  let i = 0, timer = null;
+  box.frames = {
+    start() { timer ??= setInterval(() => { i = (i + 1) % frames.length; img.src = frames[i].src; }, 170); },
+    stop() { clearInterval(timer); timer = null; },
+  };
+  if (box.onScreen && motionOn) box.frames.start();
+}
+
+function renderMotionButton() {
+  const b = $('#motion');
+  b.setAttribute('aria-label', T[lang][motionOn ? 'pause' : 'play']);
+  b.innerHTML = motionOn
+    ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z"/></svg>';
 }
 
 // Подсветка текущей категории в ленте
@@ -341,10 +393,11 @@ function setMode(d, mode) {
   spinState = null;
   if (mode === 'video') {
     const v = document.createElement('video');
-    Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: !reduceMotion, controls: reduceMotion, poster: d.poster_url || '', src: d.video_url });
+    Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: motionOn, controls: !motionOn, poster: d.poster_url || '', src: d.video_url });
     v.setAttribute('playsinline', '');
     v.addEventListener('error', () => { if (d.spin_base) setMode(d, 'spin'); }, { once: true });
     stage.prepend(v);
+    if (motionOn) v.play().catch(e => { if (e.name !== 'AbortError' && d.spin_base && v.isConnected) setMode(d, 'spin'); });
   } else if (mode === 'spin') {
     startSpin(d, stage);
   } else if (mode === 'model') {
@@ -405,6 +458,13 @@ document.addEventListener('click', e => {
   if (e.target.closest('#close') || e.target.id === 'sheet') return closeDish();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && openId) closeDish(); });
+
+$('#motion').addEventListener('click', () => {
+  motionOn = !motionOn;
+  store.set('tokio-motion', motionOn ? 'on' : 'off');
+  renderMotionButton();
+  document.querySelectorAll('#list .media').forEach(box => { if (box.onScreen) playCard(box); });
+});
 
 const root = document.documentElement;
 const savedTheme = store.get('tokio-theme');
