@@ -1,0 +1,64 @@
+{
+  "_note": "Тестовые данные. Те же поля, что у будущей таблицы guest_menu в Supabase. Цены — из Frontpad (через ТТК), вес — по ТТК, медиа — демо.",
+  "categories": [
+    { "id": "rolls",  "ru": "Роллы",   "kz": "Роллдар",       "sort": 1 },
+    { "id": "sushi",  "ru": "Суши",    "kz": "Суши",          "sort": 2 },
+    { "id": "sets",   "ru": "Сеты",    "kz": "Сеттер",        "sort": 3 },
+    { "id": "pizza",  "ru": "Пицца",   "kz": "Пицца",         "sort": 4 },
+    { "id": "snacks", "ru": "Закуски", "kz": "Тіскебасарлар", "sort": 5 },
+    { "id": "drinks", "ru": "Напитки", "kz": "Сусындар",      "sort": 6 }
+  ],
+  "dishes": [
+    {
+      "id": "philadelphia-cucumber",
+      "category": "rolls",
+      "subcategory_ru": "Сложные", "subcategory_kz": "Күрделі",
+      "name_ru": "Филадельфия с огурцом", "name_kz": "Филадельфия қиярмен",
+      "price": 3150, "weight": 290, "unit": "g",
+      "description_ru": "Классика бара: нежный лосось сверху, внутри сливочный сыр и свежий огурец.",
+      "description_kz": "Бардың классикасы: үстінде нәзік лосось, ішінде кілегейлі ірімшік пен балғын қияр.",
+      "composition_ru": "Лосось, сливочный сыр, огурец, рис, нори",
+      "composition_kz": "Лосось, кілегейлі ірімшік, қияр, күріш, нори",
+      "allergens": ["fish", "milk"],
+      "video_url": "media/philadelphia-cucumber/turntable.mp4",
+      "poster_url": "media/philadelphia-cucumber/poster.jpg",
+      "spin_base": "media/philadelphia-cucumber/spin/", "spin_count": 24,
+      "model_url": null,
+      "demo_media": true, "sort": 10, "visible": true
+    },
+    {
+      "id": "dragon",
+      "category": "rolls",
+      "subcategory_ru": "Сложные", "subcategory_kz": "Күрделі",
+      "name_ru": "Дракон", "name_kz": "Дракон",
+      "price": 3800, "weight": 370, "unit": "g",
+      "description_ru": "Угорь и лосось на ролле со сливочным сыром, соус унаги и кунжут.",
+      "description_kz": "Кілегейлі ірімшігі бар роллдың үстінде жыланбалық пен лосось, унаги тұздығы мен күнжіт.",
+      "composition_ru": "Угорь, лосось, сливочный сыр, огурец, соус унаги, кунжут, рис, нори",
+      "composition_kz": "Жыланбалық, лосось, кілегейлі ірімшік, қияр, унаги тұздығы, күнжіт, күріш, нори",
+      "allergens": ["fish", "milk", "sesame", "soy", "gluten"],
+      "video_url": "media/dragon/turntable.mp4",
+      "poster_url": "media/dragon/poster.jpg",
+      "spin_base": "media/dragon/spin/", "spin_count": 24,
+      "model_url": null,
+      "demo_media": true, "sort": 20, "visible": true
+    },
+    {
+      "id": "pepperoni-30",
+      "category": "pizza",
+      "subcategory_ru": "30 см", "subcategory_kz": "30 см",
+      "name_ru": "Пепперони", "name_kz": "Пепперони",
+      "price": 2900, "weight": 510, "unit": "g",
+      "description_ru": "Тонкое тесто, томатный соус, много моцареллы и пикантная пепперони.",
+      "description_kz": "Жұқа қамыр, қызанақ тұздығы, мол моцарелла және ащылау пепперони.",
+      "composition_ru": "Тесто, пицца-соус, моцарелла, пепперони",
+      "composition_kz": "Қамыр, пицца тұздығы, моцарелла, пепперони",
+      "allergens": ["gluten", "milk"],
+      "video_url": "media/pepperoni-30/turntable.mp4",
+      "poster_url": "media/pepperoni-30/poster.jpg",
+      "spin_base": "media/pepperoni-30/spin/", "spin_count": 24,
+      "model_url": null,
+      "demo_media": true, "sort": 30, "visible": true
+    }
+  ]
+}

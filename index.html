@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--ART-START-->
+<title>Меню ТОКИО</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Макет: одна колонка квадратных «витрин» с крутящимся блюдом; липкая шапка с лентой категорий; карточка блюда — нижний лист. */
+:root {
+  --bg: #eef0ec;        /* рисовая бумага, чуть в зелень */
+  --surface: #ffffff;
+  --ink: #161a19;
+  --muted: #5f6866;
+  --line: #d8ddd8;
+  --accent: #2c5d4c;    /* нори / матча */
+  --accent-ink: #ffffff;
+  --warn-bg: #fbecd2;   /* аллергены — смысловой цвет, не акцент */
+  --warn-ink: #7a4a06;
+  --scrim: rgba(12, 16, 15, .5);
+  --font-display: "Unbounded", "Onest", system-ui, sans-serif;
+  --font-body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 18px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1312; --surface: #171d1b; --ink: #e9ede8; --muted: #98a29e; --line: #28312e;
+    --accent: #8cc7ab; --accent-ink: #0f1312; --warn-bg: #3a2c12; --warn-ink: #f3c977; --scrim: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1312; --surface: #171d1b; --ink: #e9ede8; --muted: #98a29e; --line: #28312e;
+  --accent: #8cc7ab; --accent-ink: #0f1312; --warn-bg: #3a2c12; --warn-ink: #f3c977; --scrim: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.5 var(--font-body);
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  max-width: 1040px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Шапка */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; gap: 12px; padding-block: 12px 8px; }
+.brand { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
+.logo { font: 700 22px/1 var(--font-display); letter-spacing: .14em; }
+.tag { font-size: 12px; color: var(--muted); letter-spacing: .04em; margin-top: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.icon-btn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); cursor: pointer; }
+.icon-btn svg { width: 18px; height: 18px; }
+
+.cats { display: flex; gap: 8px; overflow-x: auto; padding-block: 4px 12px; scrollbar-width: none; }
+.cats::-webkit-scrollbar { display: none; }
+.cat { flex: none; border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.cat[aria-current="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.cat small { opacity: .7; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* Разделы и карточки */
+main { padding-block: 8px 40px; }
+.section { padding-top: 24px; scroll-margin-top: 130px; }
+.section h2 { font: 700 20px/1.2 var(--font-display); margin: 0 0 14px; letter-spacing: .02em; text-wrap: balance; }
+.empty { color: var(--muted); font-size: 14px; padding: 18px; border: 1px dashed var(--line); border-radius: var(--r); margin: 0; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 620px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+.card { display: flex; flex-direction: column; min-width: 0; background: var(--surface); border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); text-align: left; padding: 0; cursor: pointer; }
+.media { display: block; position: relative; aspect-ratio: 1 / 1; max-width: 100%; width: 100%; background: #e6e8e8 center / cover no-repeat; overflow: hidden; }
+.media video, .media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.badge { position: absolute; left: 10px; top: 10px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; background: rgba(22, 26, 25, .72); color: #fff; }
+.card-body { display: grid; gap: 4px; padding: 12px 14px 14px; }
+.eyebrow { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.name { font-size: 17px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
+.meta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 4px; }
+.weight { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.price { font: 700 17px/1 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+footer { color: var(--muted); font-size: 13px; padding-block: 0 32px; display: grid; gap: 6px; }
+
+/* Нижний лист */
+.sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: var(--scrim); }
+.panel { width: 100%; max-width: 560px; max-height: 94%; overflow-y: auto; background: var(--surface); border-radius: 22px 22px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); animation: up .22s ease-out; }
+@media (min-width: 620px) { .sheet { align-items: center; } .panel { border-radius: 22px; } }
+@keyframes up { from { transform: translateY(24px); opacity: .6; } }
+.panel .media { background-color: #e6e8e8; touch-action: pan-y; }
+.panel .media.spin { cursor: grab; touch-action: none; }
+.close { position: absolute; right: 12px; top: 12px; z-index: 2; background: rgba(22, 26, 25, .72); border: 0; color: #fff; }
+.modes { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; background: rgba(22, 26, 25, .72); border: 0; }
+.modes button { color: rgba(255, 255, 255, .75); }
+.modes button[aria-pressed="true"] { background: #fff; color: #161a19; }
+.hint { position: absolute; left: 0; right: 0; top: 14px; text-align: center; font-size: 13px; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); pointer-events: none; transition: opacity .4s; }
+.detail { padding: 18px 20px 24px; display: grid; gap: 14px; }
+.detail h3 { font: 700 22px/1.25 var(--font-display); margin: 0; text-wrap: balance; }
+.detail .meta { margin: 0; }
+.detail .price { font-size: 22px; }
+.detail p { margin: 0; }
+.label { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 13px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-ink); }
+.note { font-size: 13px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { .panel { animation: none; } .hint { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="bar">
+      <div class="brand"><span class="logo">ТОКИО</span><span class="tag" id="tag"></span></div>
+      <div class="seg" role="group" aria-label="Язык / Тіл">
+        <button type="button" id="lang-ru" data-lang="ru">RU</button>
+        <button type="button" id="lang-kz" data-lang="kz">KZ</button>
+      </div>
+      <button type="button" class="icon-btn" id="theme" aria-label="Тема">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+    <nav class="cats" id="cats"></nav>
+  </div>
+</header>
+<main class="wrap" id="list"></main>
+<footer class="wrap" id="foot"></footer>
+<div class="sheet" id="sheet" hidden></div>
+
+<script>
+// Источник данных. Пока таблицы guest_menu нет — берём data/menu.json.
+// Гостевое меню НЕ читает ttk_data (там себестоимость).
+const CONFIG = {
+  source: 'local',                       // 'local' | 'supabase'
+  localUrl: 'data/menu.json',
+  supabaseUrl: 'https://eiodeeugxtbbcpclxtyc.supabase.co',
+  supabaseKey: '',                       // publishable (anon) ключ; RLS — только чтение guest_menu
+  table: 'guest_menu',
+};
+
+const DEFAULT_CATEGORIES = [
+  { id: 'rolls', ru: 'Роллы', kz: 'Роллдар', sort: 1 },
+  { id: 'sushi', ru: 'Суши', kz: 'Суши', sort: 2 },
+  { id: 'sets', ru: 'Сеты', kz: 'Сеттер', sort: 3 },
+  { id: 'pizza', ru: 'Пицца', kz: 'Пицца', sort: 4 },
+  { id: 'snacks', ru: 'Закуски', kz: 'Тіскебасарлар', sort: 5 },
+  { id: 'drinks', ru: 'Напитки', kz: 'Сусындар', sort: 6 },
+];
+
+const T = {
+  ru: {
+    tag: 'суши-бар · меню', theme: 'Сменить тему', soon: 'Позиции раздела скоро появятся.',
+    demo: 'демо', video: 'Видео', spin: '360°', model: '3D', close: 'Закрыть',
+    hint: 'Проведите пальцем, чтобы повернуть', composition: 'Состав', allergens: 'Аллергены',
+    g: 'г', ml: 'мл', noAllergens: 'Основные аллергены не указаны',
+    foot1: 'Цены в тенге. Вес — в граммах.', foot2: 'Если у вас аллергия, скажите официанту — подскажем блюдо.',
+    demoNote: 'Видео демонстрационное — скоро заменим на съёмку настоящего блюда.',
+    error: 'Меню не загрузилось. Проверьте интернет и обновите страницу.',
+  },
+  kz: {
+    tag: 'суши-бар · мәзір', theme: 'Тақырыпты ауыстыру', soon: 'Бұл бөлімнің тағамдары жақында қосылады.',
+    demo: 'демо', video: 'Бейне', spin: '360°', model: '3D', close: 'Жабу',
+    hint: 'Бұру үшін саусақпен сырғытыңыз', composition: 'Құрамы', allergens: 'Аллергендер',
+    g: 'г', ml: 'мл', noAllergens: 'Негізгі аллергендер көрсетілмеген',
+    foot1: 'Бағалар теңгемен. Салмағы — граммен.', foot2: 'Аллергияңыз болса, даяшыға айтыңыз — тағам таңдауға көмектесеміз.',
+    demoNote: 'Бейне көрсетілім үшін — жақында нақты тағамның түсірілімімен ауыстырамыз.',
+    error: 'Мәзір жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз.',
+  },
+};
+const ALLERGENS = {
+  fish: ['Рыба', 'Балық'], milk: ['Молоко', 'Сүт'], gluten: ['Глютен', 'Глютен'], soy: ['Соя', 'Соя'],
+  sesame: ['Кунжут', 'Күнжіт'], egg: ['Яйцо', 'Жұмыртқа'], crustaceans: ['Ракообразные', 'Шаянтәрізділер'],
+  mollusc: ['Моллюски', 'Ұлулар'], nuts: ['Орехи', 'Жаңғақ'],
+};
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lang = store.get('tokio-lang') || ((navigator.language || '').toLowerCase().startsWith('kk') ? 'kz' : 'ru');
+let data = { categories: DEFAULT_CATEGORIES, dishes: [] };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const tr = (o, f) => o[`${f}_${lang}`] || o[`${f}_ru`] || '';
+const price = n => Number(n).toLocaleString('ru-RU').replace(/\s/g, ' ') + ' ₸';
+const weight = d => d.weight ? `${d.weight} ${T[lang][d.unit === 'ml' ? 'ml' : 'g']}` : '';
+const spinSrc = (d, i) => d.spin_base + String(i).padStart(2, '0') + '.jpg';
+
+async function load() {
+  if (CONFIG.source === 'supabase') {
+    const url = `${CONFIG.supabaseUrl}/rest/v1/${CONFIG.table}?select=*&visible=eq.true&order=sort`;
+    const r = await fetch(url, { headers: { apikey: CONFIG.supabaseKey, Authorization: `Bearer ${CONFIG.supabaseKey}` } });
+    if (!r.ok) throw new Error(r.status);
+    return { categories: DEFAULT_CATEGORIES, dishes: await r.json() };
+  }
+  const r = await fetch(CONFIG.localUrl);
+  if (!r.ok) throw new Error(r.status);
+  const j = await r.json();
+  return { categories: j.categories || DEFAULT_CATEGORIES, dishes: (j.dishes || []).filter(d => d.visible !== false) };
+}
+
+/* ---------- Список ---------- */
+function mediaHTML(d) {
+  const poster = d.poster_url ? ` style="background-image:url('${esc(d.poster_url)}')"` : '';
+  const video = d.video_url && !reduceMotion
+    ? `<video muted loop playsinline preload="none" poster="${esc(d.poster_url || '')}" data-src="${esc(d.video_url)}" aria-hidden="true"></video>` : '';
+  const badge = d.demo_media ? `<span class="badge">${T[lang].demo}</span>` : '';
+  return `<span class="media"${poster}>${video}${badge}</span>`;
+}
+
+function render() {
+  const t = T[lang];
+  document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru';
+  $('#tag').textContent = t.tag;
+  $('#theme').setAttribute('aria-label', t.theme);
+  for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-pressed', b.dataset.lang === lang);
+
+  const cats = [...data.categories].sort((a, b) => a.sort - b.sort);
+  const by = id => data.dishes.filter(d => d.category === id).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+
+  $('#cats').innerHTML = cats.map(c => {
+    const n = by(c.id).length;
+    return `<button type="button" class="cat" data-cat="${c.id}">${esc(c[lang] || c.ru)}${n ? `<small>${n}</small>` : ''}</button>`;
+  }).join('');
+
+  $('#list').innerHTML = cats.map(c => {
+    const items = by(c.id);
+    const body = items.length
+      ? `<div class="grid">${items.map(d => `
+          <button type="button" class="card" data-id="${esc(d.id)}">
+            ${mediaHTML(d)}
+            <span class="card-body">
+              ${tr(d, 'subcategory') ? `<span class="eyebrow">${esc(tr(d, 'subcategory'))}</span>` : ''}
+              <span class="name">${esc(tr(d, 'name'))}</span>
+              <span class="meta"><span class="weight">${weight(d)}</span><span class="price">${price(d.price)}</span></span>
+            </span>
+          </button>`).join('')}</div>`
+      : `<p class="empty">${t.soon}</p>`;
+    return `<section class="section" id="cat-${c.id}" data-cat="${c.id}"><h2>${esc(c[lang] || c.ru)}</h2>${body}</section>`;
+  }).join('');
+
+  $('#foot').innerHTML = `<span>${t.foot1}</span><span>${t.foot2}</span>`;
+  watchVideos();
+  watchSections();
+}
+
+// Видео грузится и играет только когда карточка на экране
+let videoObserver;
+function watchVideos() {
+  videoObserver?.disconnect();
+  videoObserver = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      const v = e.target;
+      if (e.isIntersecting) {
+        if (!v.src) { v.src = v.dataset.src; v.addEventListener('error', () => v.remove(), { once: true }); }
+        v.play().catch(() => {});
+      } else if (v.src) v.pause();
+    }
+  }, { rootMargin: '200px 0px', threshold: 0.25 });
+  document.querySelectorAll('#list video').forEach(v => videoObserver.observe(v));
+}
+
+// Подсветка текущей категории в ленте
+let sectionObserver;
+function watchSections() {
+  sectionObserver?.disconnect();
+  sectionObserver = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting) setCurrent(e.target.dataset.cat);
+  }, { rootMargin: '-140px 0px -60% 0px' });
+  document.querySelectorAll('.section').forEach(s => sectionObserver.observe(s));
+}
+function setCurrent(id) {
+  document.querySelectorAll('.cat').forEach(b => {
+    const on = b.dataset.cat === id;
+    b.setAttribute('aria-current', on);
+    if (on) b.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  });
+}
+
+/* ---------- Карточка блюда ---------- */
+let openId = null, spinState = null;
+
+function openDish(id, mode) {
+  const d = data.dishes.find(x => x.id === id);
+  if (!d) return;
+  openId = id;
+  const t = T[lang];
+  const modes = [];
+  if (d.video_url) modes.push('video');
+  if (d.spin_base && d.spin_count) modes.push('spin');
+  if (d.model_url) modes.push('model');
+  mode = mode && modes.includes(mode) ? mode : modes[0];
+  const al = (d.allergens || []).map(a => `<span class="chip">${(ALLERGENS[a] || [a, a])[lang === 'kz' ? 1 : 0]}</span>`).join('');
+
+  $('#sheet').innerHTML = `
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="dish-title">
+      <div class="media" id="stage" style="background-image:url('${esc(d.poster_url || '')}')">
+        <button type="button" class="icon-btn close" id="close" aria-label="${t.close}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        ${modes.length > 1 ? `<div class="seg modes">${modes.map(m => `<button type="button" data-mode="${m}" aria-pressed="${m === mode}">${t[m]}</button>`).join('')}</div>` : ''}
+      </div>
+      <div class="detail">
+        <h3 id="dish-title">${esc(tr(d, 'name'))}</h3>
+        <div class="meta"><span class="weight">${weight(d)}</span><span class="price">${price(d.price)}</span></div>
+        ${tr(d, 'description') ? `<p>${esc(tr(d, 'description'))}</p>` : ''}
+        ${tr(d, 'composition') ? `<div><div class="label">${t.composition}</div><p>${esc(tr(d, 'composition'))}</p></div>` : ''}
+        <div><div class="label">${t.allergens}</div>${al ? `<div class="chips">${al}</div>` : `<p class="note">${t.noAllergens}</p>`}</div>
+        ${d.demo_media ? `<p class="note">${t.demoNote}</p>` : ''}
+      </div>
+    </div>`;
+  $('#sheet').hidden = false;
+  document.body.style.overflow = 'hidden';
+  setMode(d, mode);
+  $('#close').focus({ preventScroll: true });
+}
+
+function setMode(d, mode) {
+  const stage = $('#stage');
+  stage.querySelectorAll('video, img, model-viewer, .hint').forEach(n => n.remove());
+  stage.classList.toggle('spin', mode === 'spin');
+  stage.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  spinState = null;
+  if (mode === 'video') {
+    const v = document.createElement('video');
+    Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: !reduceMotion, controls: reduceMotion, poster: d.poster_url || '', src: d.video_url });
+    v.setAttribute('playsinline', '');
+    v.addEventListener('error', () => { if (d.spin_base) setMode(d, 'spin'); }, { once: true });
+    stage.prepend(v);
+  } else if (mode === 'spin') {
+    startSpin(d, stage);
+  } else if (mode === 'model') {
+    loadModelViewer().then(() => {
+      const m = document.createElement('model-viewer');
+      Object.assign(m, { src: d.model_url, poster: d.poster_url || '' });
+      ['camera-controls', 'auto-rotate', 'ar'].forEach(a => m.setAttribute(a, ''));
+      m.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:transparent';
+      stage.prepend(m);
+    });
+  }
+}
+
+// 360°: N кадров, свайп меняет кадр; кадры подгружаются заранее
+function startSpin(d, stage) {
+  const n = d.spin_count, frames = [];
+  for (let i = 0; i < n; i++) { const im = new Image(); im.decoding = 'async'; im.src = spinSrc(d, i); frames.push(im); }
+  const img = document.createElement('img');
+  img.alt = ''; img.draggable = false; img.src = frames[0].src;
+  const hint = document.createElement('div');
+  hint.className = 'hint'; hint.textContent = T[lang].hint;
+  stage.prepend(img); stage.append(hint);
+  const st = spinState = { i: 0, x: null, start: 0 };
+  const show = i => { st.i = ((i % n) + n) % n; img.src = frames[st.i].src; };
+  const pxPerFrame = () => stage.clientWidth / n * 1.2;
+  stage.onpointerdown = e => { if (e.target.closest('button')) return; st.x = e.clientX; st.start = st.i; stage.setPointerCapture(e.pointerId); hint.style.opacity = 0; };
+  stage.onpointermove = e => { if (st.x === null || spinState !== st) return; show(st.start - Math.round((e.clientX - st.x) / pxPerFrame())); };
+  stage.onpointerup = stage.onpointercancel = () => { st.x = null; };
+}
+
+let mvPromise;
+function loadModelViewer() {
+  return mvPromise ||= new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.type = 'module'; s.src = 'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js';
+    s.onload = res; s.onerror = rej; document.head.append(s);
+  });
+}
+
+function closeDish() {
+  $('#sheet').hidden = true; $('#sheet').innerHTML = '';
+  document.body.style.overflow = '';
+  const card = document.querySelector(`.card[data-id="${CSS.escape(openId || '')}"]`);
+  openId = null; spinState = null;
+  card?.focus({ preventScroll: true });
+}
+
+/* ---------- События ---------- */
+document.addEventListener('click', e => {
+  const card = e.target.closest('.card');
+  if (card) return openDish(card.dataset.id);
+  const cat = e.target.closest('.cat');
+  if (cat) { document.getElementById('cat-' + cat.dataset.cat).scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }); setCurrent(cat.dataset.cat); return; }
+  const l = e.target.closest('[data-lang]');
+  if (l) { lang = l.dataset.lang; store.set('tokio-lang', lang); const id = openId, m = $('#stage [data-mode][aria-pressed="true"]')?.dataset.mode; render(); if (id) openDish(id, m); return; }
+  const m = e.target.closest('[data-mode]');
+  if (m && openId) return setMode(data.dishes.find(x => x.id === openId), m.dataset.mode);
+  if (e.target.closest('#close') || e.target.id === 'sheet') return closeDish();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && openId) closeDish(); });
+
+const root = document.documentElement;
+const savedTheme = store.get('tokio-theme');
+if (savedTheme) root.dataset.theme = savedTheme;
+$('#theme').addEventListener('click', () => {
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  store.set('tokio-theme', root.dataset.theme);
+});
+
+load().then(d => { data = d; render(); }).catch(() => {
+  render();
+  $('#list').innerHTML = `<p class="empty" style="margin-top:24px">${T[lang].error}</p>`;
+});
+</script>
+<!--ART-END-->
+</body>
+</html>
